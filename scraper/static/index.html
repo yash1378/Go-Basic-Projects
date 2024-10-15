@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elegant Data Display</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f4f8;
+            color: #2d3748;
+        }
+        .post, .comment {
+            transition: all 0.3s ease;
+        }
+        .post:hover, .comment:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spinner 1.5s linear infinite;
+            animation: spinner 1.5s linear infinite;
+        }
+        @-webkit-keyframes spinner {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-r from-blue-100 to-purple-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-center mb-8 text-indigo-700 animate__animated animate__fadeIn">Elegant Data Display</h1>
+        <div id="content" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        <div id="loader" class="flex justify-center items-center my-8">
+            <div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-24 w-24"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <script>
+        async function fetchData() {
+            try {
+                const response = await axios.get('/scrape-data');
+                displayData(response.data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('content').innerHTML = `<p class="text-red-500 text-center">Error fetching data: ${error.message}</p>`;
+            } finally {
+                document.getElementById('loader').style.display = 'none';
+            }
+        }
+
+        function displayData(data) {
+            const contentDiv = document.getElementById('content');
+            contentDiv.innerHTML = '';
+
+            data.Posts.forEach((post, index) => {
+                const postDiv = document.createElement('div');
+                postDiv.classList.add('post', 'bg-white', 'rounded-lg', 'shadow-md', 'p-6', 'mb-6', 'animate__animated', 'animate__fadeInUp');
+                postDiv.style.animationDelay = `${index * 0.1}s`;
+                postDiv.innerHTML = `
+                    <h3 class="text-xl font-semibold mb-2 text-indigo-600">${post.title}</h3>
+                    <p class="text-gray-700">${post.body}</p>
+                `;
+                contentDiv.appendChild(postDiv);
+            });
+
+            data.Comments.forEach((comment, index) => {
+                const commentDiv = document.createElement('div');
+                commentDiv.classList.add('comment', 'bg-white', 'rounded-lg', 'shadow-md', 'p-6', 'mb-6', 'animate__animated', 'animate__fadeInUp');
+                commentDiv.style.animationDelay = `${(index + data.Posts.length) * 0.1}s`;
+                commentDiv.innerHTML = `
+                    <h4 class="text-lg font-semibold mb-1 text-purple-600">${comment.name} <span class="text-sm text-gray-500">(${comment.email})</span></h4>
+                    <p class="text-gray-700">${comment.body}</p>
+                `;
+                contentDiv.appendChild(commentDiv);
+            });
+        }
+
+        window.onload = fetchData;
+    </script>
+</body>
+</html>
